@@ -1,0 +1,9 @@
+{
+  "name": "team-pm-agent",
+  "version": "1.0.0",
+  "description": "产品经理 Agent：澄清需求并产出 docs/requirements/<slug>-prd.md（精简 PRD，默认中文）。",
+  "author": {
+    "name": "Exoscope Team"
+  },
+  "keywords": ["pm", "prd", "product", "requirements", "产品经理"]
+}

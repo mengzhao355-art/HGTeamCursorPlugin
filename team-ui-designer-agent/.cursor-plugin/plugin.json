@@ -1,0 +1,9 @@
+{
+  "name": "team-ui-designer-agent",
+  "version": "1.0.0",
+  "description": "UI 设计 Agent：依据 PRD 产出 UI 规格与 HTML 线框原型（docs/design）。",
+  "author": {
+    "name": "Exoscope Team"
+  },
+  "keywords": ["ui", "ux", "design", "wireframe", "prototype", "界面设计"]
+}

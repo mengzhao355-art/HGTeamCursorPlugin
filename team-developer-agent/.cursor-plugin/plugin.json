@@ -1,0 +1,9 @@
+{
+  "name": "team-developer-agent",
+  "version": "1.0.0",
+  "description": "开发 Agent：按 PRD + UI 规格最小改动实现代码；可选 docs/tasks。",
+  "author": {
+    "name": "Exoscope Team"
+  },
+  "keywords": ["dev", "implement", "coding", "开发", "编码"]
+}

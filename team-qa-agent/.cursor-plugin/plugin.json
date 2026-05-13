@@ -1,0 +1,9 @@
+{
+  "name": "team-qa-agent",
+  "version": "1.0.0",
+  "description": "QA Agent：基于 PRD/UI 编写 docs/test 测试用例并辅助执行。",
+  "author": {
+    "name": "Exoscope Team"
+  },
+  "keywords": ["qa", "test", "验收", "测试用例"]
+}

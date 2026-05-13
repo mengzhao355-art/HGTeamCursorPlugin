@@ -1,0 +1,9 @@
+{
+  "name": "team-ux-reviewer-agent",
+  "version": "1.0.0",
+  "description": "UX 验收 Agent：对照 PRD/UI 产出 docs/review 交互审查报告（默认中文）。",
+  "author": {
+    "name": "Exoscope Team"
+  },
+  "keywords": ["ux", "review", "走查", "交互验收"]
+}

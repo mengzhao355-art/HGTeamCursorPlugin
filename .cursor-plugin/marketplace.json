@@ -1,0 +1,42 @@
+{
+  "name": "exoscope-virtual-dev-team",
+  "owner": {
+    "name": "Exoscope Team",
+    "email": "devtools@example.com"
+  },
+  "metadata": {
+    "description": "虚拟研发团队：PM / UI 设计 / 开发 / QA / UX 验收 五个独立 Cursor 插件（各含 Skill + /team:* 命令）。导入 Team Marketplace 后逐个安装或设为 Required。"
+  },
+  "plugins": [
+    {
+      "name": "team-pm-agent",
+      "source": "team-pm-agent",
+      "description": "产品经理：澄清需求并产出 docs/requirements/<slug>-prd.md（精简三节 PRD，默认中文）。",
+      "keywords": ["pm", "prd", "product", "requirements", "产品经理"]
+    },
+    {
+      "name": "team-ui-designer-agent",
+      "source": "team-ui-designer-agent",
+      "description": "UI 设计：依据 PRD 产出 UI 规格与 HTML 线框原型（docs/design）。",
+      "keywords": ["ui", "ux", "design", "wireframe", "prototype", "界面设计"]
+    },
+    {
+      "name": "team-developer-agent",
+      "source": "team-developer-agent",
+      "description": "开发：按 PRD + UI 规格最小改动实现；可选 docs/tasks。",
+      "keywords": ["dev", "implement", "coding", "开发", "编码"]
+    },
+    {
+      "name": "team-qa-agent",
+      "source": "team-qa-agent",
+      "description": "测试：基于 PRD/UI 编写 docs/test 用例并辅助执行。",
+      "keywords": ["qa", "test", "验收", "测试用例"]
+    },
+    {
+      "name": "team-ux-reviewer-agent",
+      "source": "team-ux-reviewer-agent",
+      "description": "交互验收：对照 PRD/UI 产出 docs/review 审查报告（默认中文结论）。",
+      "keywords": ["ux", "review", "走查", "交互验收"]
+    }
+  ]
+}
