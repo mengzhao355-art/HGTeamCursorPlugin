@@ -1,0 +1,10 @@
+{
+  "gateMode": "advisory",
+  "maxDiffLines": 3000,
+  "agentTimeoutSeconds": 180,
+  "skipExtensions": [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".dll", ".exe", ".pdb", ".snk", ".zip", ".7z", ".pdf", ".woff", ".woff2", ".ttf"],
+  "openReportAfterReview": true,
+  "criticalMarker": "🔴 必须修复",
+  "warningMarker": "🟡 建议修复",
+  "suggestionMarker": "🟢 优化建议"
+}

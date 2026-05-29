@@ -1,9 +1,9 @@
 {
   "name": "team-developer-agent",
-  "version": "1.0.0",
-  "description": "开发 Agent：按 PRD + UI 规格最小改动实现代码；可选 docs/tasks。",
+  "version": "1.1.0",
+  "description": "开发 Agent：按 PRD + UI 规格实现代码；SVN 提交前 AI 审查；TAPD Bug 文档生成。",
   "author": {
     "name": "Exoscope Team"
   },
-  "keywords": ["dev", "implement", "coding", "开发", "编码"]
+  "keywords": ["dev", "implement", "coding", "开发", "编码", "review", "svn", "code-review", "审查"]
 }

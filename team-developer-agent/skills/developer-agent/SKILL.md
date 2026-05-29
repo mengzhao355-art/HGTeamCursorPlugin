@@ -49,13 +49,15 @@ Implement behavior that matches **`docs/requirements/<slug>-prd.md`** and **`doc
    构建或相关测试能跑则跑；无法运行时列出**手动验证步骤**（对照 PRD 验收条目）。
 
 6. **Handoff**  
-   建议下一步：QA Agent 编写/执行用例；或 UX Reviewer 做交互对照验收。
+   - 建议 **`/team:qa <slug>`** 编写/执行用例  
+   - 需要体验验收时 **`/team:ux <slug>`**  
+   - **提交前**：执行 **`/team:svn-review`** 做 AI 代码审查；或依赖 TortoiseSVN Pre-commit Hook 自动审查（见 `scripts/svn-ai-review/install-tortoisesvn-hook.ps1`）
 
 ## Guardrails
 
 - **单一事实来源**：产品行为以 PRD 为准；布局与交互细节以 UI 规格为准；冲突时在回复中列出并让用户裁决，不要静默取舍。
 - **OpenSpec**：若用户要求走 OpenSpec，优先使用仓库已有 `openspec-propose` / `openspec-apply-change`，本 Skill 聚焦“读 docs + 改代码”路径。
-- **SVN**：提交前遵循 `.cursor/rules/svn.mdc`；不代替用户执行敏感提交除非用户明确要求。
+- **SVN**：提交前执行 **svn-code-review** 审查（`/team:svn-review` 或 TortoiseSVN Hook）；确认报告无 `🔴 必须修复` 项后再提交；不代替用户执行敏感提交除非用户明确要求。
 
 ## Optional tasks file template
 

@@ -8,7 +8,7 @@
 |------|-------------|------|
 | `team-pm-agent/` | `team-pm-agent` | Skill `pm-agent` + 命令 `/team:pm` |
 | `team-ui-designer-agent/` | `team-ui-designer-agent` | Skill `ui-designer-agent` + `/team:ui` |
-| `team-developer-agent/` | `team-developer-agent` | Skill `developer-agent` + `/team:dev` |
+| `team-developer-agent/` | `team-developer-agent` | Skill `developer-agent` + `/team:dev`；Skill `svn-code-review` + `/team:svn-review`；Skill `tapd-bug-doc-generator` + `/team:pullTapdBug` |
 | `team-qa-agent/` | `team-qa-agent` | Skill `qa-agent` + `/team:qa` |
 | `team-ux-reviewer-agent/` | `team-ux-reviewer-agent` | Skill `ux-reviewer-agent` + `/team:ux` |
 
