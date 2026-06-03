@@ -94,21 +94,25 @@ function Get-SvnChangedFiles {
 
     Push-Location $Root
     try {
-        $output = & svn status 2>&1
+        $output = @(& svn status 2>&1 | ForEach-Object { "$_" })
         if ($LASTEXITCODE -ne 0) {
-            throw "svn status 失败：$output"
+            throw "svn status 失败：$($output -join [Environment]::NewLine)"
         }
 
-        $files = @()
+        if ($output.Count -eq 1 -and $output[0] -match "`n") {
+            $output = $output[0] -split "`r?`n"
+        }
+
+        $files = [System.Collections.Generic.List[string]]::new()
         foreach ($line in $output) {
             if ($line -match '^\?\?\s+(.+)$') {
-                $files += $Matches[1].Trim()
+                [void]$files.Add($Matches[1].Trim())
             }
             elseif ($line -match '^[MADRC!~]\s+(.+)$') {
-                $files += $Matches[1].Trim()
+                [void]$files.Add($Matches[1].Trim())
             }
         }
-        return ,$files
+        return @($files.ToArray())
     }
     finally {
         Pop-Location
@@ -274,19 +278,21 @@ $defaultConfigPath = Join-Path $scriptDir 'review-config.json'
 $config = Get-ReviewConfig -Workspace $workspace -DefaultConfigPath $defaultConfigPath -OverrideConfigPath $ConfigPath
 
 # 先判断是否需要审查，属性变更/无可审查文件时直接跳过（无需 agent）
-$files = @($FileList | Where-Object { $_ -and $_.Trim() })
+$files = @($FileList | Where-Object { $_ -and "$_".Trim() } | ForEach-Object { "$_".Trim() })
 if (@($files).Count -eq 0) {
     $files = @(Get-SvnChangedFiles -Root $workspace)
 }
 
-$files = @(
-    $files |
-        ForEach-Object {
-            if ([System.IO.Path]::IsPathRooted($_)) { $_ } else { Join-Path $workspace $_ }
-        } |
-        Where-Object { -not (Test-ShouldSkipFile -FilePath $_ -Config $config) } |
-        Select-Object -Unique
-)
+$resolvedFiles = [System.Collections.Generic.List[string]]::new()
+foreach ($item in @($files)) {
+    $path = if ([System.IO.Path]::IsPathRooted($item)) { $item } else { Join-Path $workspace $item }
+    if (-not (Test-ShouldSkipFile -FilePath $path -Config $config)) {
+        if (-not $resolvedFiles.Contains($path)) {
+            [void]$resolvedFiles.Add($path)
+        }
+    }
+}
+$files = @($resolvedFiles.ToArray())
 
 if (@($files).Count -eq 0 -or (Test-IsPropertyOnlyChange -Paths @($FileList) -Workspace $workspace)) {
     if ($HookMode) { exit 0 }
