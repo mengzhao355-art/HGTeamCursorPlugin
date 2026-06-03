@@ -108,7 +108,7 @@ function Get-SvnChangedFiles {
                 $files += $Matches[1].Trim()
             }
         }
-        return $files
+        return ,$files
     }
     finally {
         Pop-Location
@@ -144,12 +144,12 @@ function Test-IsPropertyOnlyChange {
         [string]$Workspace
     )
 
-    if ($Paths.Count -eq 0) {
+    if (@($Paths).Count -eq 0) {
         return $false
     }
 
     $hasReviewableLeaf = $false
-    foreach ($path in $Paths) {
+    foreach ($path in @($Paths)) {
         $fullPath = if ([System.IO.Path]::IsPathRooted($path)) { $path } else { Join-Path $Workspace $path }
         if ((Test-Path -LiteralPath $fullPath -PathType Leaf)) {
             $hasReviewableLeaf = $true
@@ -275,7 +275,7 @@ $config = Get-ReviewConfig -Workspace $workspace -DefaultConfigPath $defaultConf
 
 # 先判断是否需要审查，属性变更/无可审查文件时直接跳过（无需 agent）
 $files = @($FileList | Where-Object { $_ -and $_.Trim() })
-if ($files.Count -eq 0) {
+if (@($files).Count -eq 0) {
     $files = @(Get-SvnChangedFiles -Root $workspace)
 }
 
@@ -332,14 +332,14 @@ $reportPath = Join-Path $reportDir "review-$timestamp.md"
 
 Push-Location $workspace
 try {
-    $relativeFiles = $files | ForEach-Object {
+    $relativeFiles = @($files | ForEach-Object {
         if ($_.StartsWith($workspace, [StringComparison]::OrdinalIgnoreCase)) {
             $_.Substring($workspace.Length).TrimStart('\', '/')
         }
         else { $_ }
-    }
+    })
 
-    if ($relativeFiles.Count -eq 0) {
+    if (@($relativeFiles).Count -eq 0) {
         $diffText = ''
     }
     else {
