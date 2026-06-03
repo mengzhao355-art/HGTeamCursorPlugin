@@ -41,6 +41,45 @@ function Write-ReviewError {
     [Console]::Error.WriteLine($Message)
 }
 
+function Write-Utf8TextFile {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$Content
+    )
+
+    $utf8Bom = New-Object System.Text.UTF8Encoding $true
+    $dir = Split-Path -Parent $Path
+    if ($dir -and -not (Test-Path -LiteralPath $dir)) {
+        New-Item -ItemType Directory -Force -Path $dir | Out-Null
+    }
+    [System.IO.File]::WriteAllText($Path, $Content, $utf8Bom)
+}
+
+function Read-Utf8TextFile {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $utf8 = New-Object System.Text.UTF8Encoding $false
+    $content = [System.IO.File]::ReadAllText($Path, $utf8)
+    if ($content.Length -gt 0 -and [int][char]$content[0] -eq 0xFEFF) {
+        return $content.Substring(1)
+    }
+    return $content
+}
+
+function Get-MarkdownReportFromAgentOutput {
+    param([string]$Text)
+
+    if ([string]::IsNullOrWhiteSpace($Text)) {
+        return $Text
+    }
+
+    if ($Text -match '(?s)```(?:markdown)?\s*\r?\n(.+?)\r?\n```') {
+        return $Matches[1].Trim()
+    }
+
+    return $Text.Trim()
+}
+
 function Test-AgentCliAvailable {
     $agentCmd = Get-Command agent -ErrorAction SilentlyContinue
     if (-not $agentCmd) {
@@ -191,8 +230,8 @@ function Invoke-AgentReview {
 
     $prompt = @"
 严格遵循 svn-code-review 技能（skills/svn-code-review/SKILL.md）中的审查规范与报告模板。
-分析以下 diff 文件，将完整 Markdown 审查报告写入此路径：$ReportPath
-不要修改任何源代码，只写报告文件。
+分析以下 diff 文件，将完整 Markdown 审查报告（UTF-8 中文）直接写入此路径：$ReportPath
+禁止修改该路径以外的任何源代码文件；仅允许创建/覆盖上述报告文件。
 若 diff 无实质文本变更，仍输出报告并结论为「通过」。
 
 Diff 文件：$DiffPath
@@ -201,7 +240,7 @@ Diff 文件：$DiffPath
 "@
 
     $agentArgs = @(
-        '-p', '--trust', '--mode', 'ask',
+        '-p', '--trust',
         '--plugin-dir', $PluginRoot,
         '--workspace', $Workspace,
         '--output-format', 'text',
@@ -210,6 +249,12 @@ Diff 文件：$DiffPath
 
     $job = Start-Job -ScriptBlock {
         param($ArgsList)
+        $utf8 = New-Object System.Text.UTF8Encoding $false
+        $OutputEncoding = $utf8
+        [Console]::OutputEncoding = $utf8
+        $env:PYTHONIOENCODING = 'utf-8'
+        $env:LANG = 'en_US.UTF-8'
+        chcp 65001 | Out-Null
         & agent @ArgsList 2>&1
     } -ArgumentList (,$agentArgs)
 
@@ -231,11 +276,15 @@ Diff 文件：$DiffPath
         throw "agent 执行失败 (exit $exitCode)：$($output | Out-String)"
     }
 
-    if (-not (Test-Path $ReportPath) -or (Get-Item $ReportPath).Length -eq 0) {
-        $outputText = ($output | Out-String).Trim()
+    if (-not (Test-Path -LiteralPath $ReportPath) -or (Get-Item -LiteralPath $ReportPath).Length -eq 0) {
+        $outputText = Get-MarkdownReportFromAgentOutput -Text (($output | Out-String).Trim())
         if ($outputText) {
-            Set-Content -Path $ReportPath -Value $outputText -Encoding UTF8
+            Write-Utf8TextFile -Path $ReportPath -Content $outputText
         }
+    }
+    elseif (Test-Path -LiteralPath $ReportPath) {
+        $existing = Read-Utf8TextFile -Path $ReportPath
+        Write-Utf8TextFile -Path $ReportPath -Content $existing
     }
 
     if (-not (Test-Path $ReportPath)) {
@@ -249,7 +298,7 @@ function Get-ReportCounts {
         [object]$Config
     )
 
-    $content = Get-Content $ReportPath -Raw -Encoding UTF8
+    $content = Read-Utf8TextFile -Path $ReportPath
     $criticalPattern = '(?m)^\s*-\s*' + [regex]::Escape($Config.criticalMarker)
     $warningPattern = '(?m)^\s*-\s*' + [regex]::Escape($Config.warningMarker)
     $suggestionPattern = '(?m)^\s*-\s*' + [regex]::Escape($Config.suggestionMarker)
@@ -362,14 +411,14 @@ try {
         $diffText = ($diffOutput | Out-String)
     }
 
-    Set-Content -Path $diffPath -Value $diffText -Encoding UTF8
+    Write-Utf8TextFile -Path $diffPath -Content $diffText
 }
 finally {
     Pop-Location
 }
 
 if ([string]::IsNullOrWhiteSpace($diffText)) {
-    Set-Content -Path $reportPath -Value @"
+    Write-Utf8TextFile -Path $reportPath -Content @"
 # SVN 代码审查报告
 
 - **时间**：$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
@@ -382,7 +431,7 @@ if ([string]::IsNullOrWhiteSpace($diffText)) {
 ## 结论
 
 **通过**
-"@ -Encoding UTF8
+"@
 
     if ($HookMode) { exit 0 }
     Write-Output @{ ExitCode = 0; ReportPath = $reportPath; Message = '无文本 diff，已跳过。' }
