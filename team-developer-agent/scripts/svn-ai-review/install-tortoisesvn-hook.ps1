@@ -32,6 +32,7 @@ else {
     Write-Host "已部署脚本到：$targetDir" -ForegroundColor Green
 }
 
+<<<<<<< HEAD
 $hookCmd = Join-Path $targetDir 'review-pre-commit.cmd'
 $wcPath = (Resolve-Path $WorkingCopyPath).Path
 
@@ -51,17 +52,33 @@ Write-Host "   错误示例（会导致 PATH 文件不存在 %PATH%）："
 Write-Host "   - 直接运行 powershell ... review-pre-commit.ps1（无 TortoiseSVN 传参）"
 Write-Host "   - 使用 Visual Studio / 命令行 svn commit（不触发 TortoiseSVN Hook）"
 Write-Host "   - 将 %PATH% 写成 %%PATH%% 或加多余引号"
+=======
+$hookPs1 = Join-Path $targetDir 'review-pre-commit.ps1'
+$wcPath = (Resolve-Path $WorkingCopyPath).Path
+
+Write-Host ""
+Write-Host "=== TortoiseSVN Pre-commit Hook（推荐配置） ===" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "1. TortoiseSVN -> Settings -> Hook Scripts -> Add"
+Write-Host "   Hook Type         : Pre-commit"
+Write-Host "   Working Copy Path : E:\project   （SVN 工作副本根，非 zmDevelop 子目录）"
+Write-Host "   当前示例路径       : $wcPath"
+Write-Host ""
+Write-Host "2. Command Line（推荐：直接调 PowerShell，不手写参数；TortoiseSVN 会自动追加）" -ForegroundColor Green
+Write-Host ""
+$recommended = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$hookPs1`""
+Write-Host $recommended -ForegroundColor White
+>>>>>>> ef5ce70 (fix(svn-ai-review): 修正 TortoiseSVN Hook 参数解析与配置说明)
 Write-Host ""
 Write-Host "3. 勾选 [Wait for the script to finish]"
-Write-Host "4. 确保已安装 Cursor CLI："
-Write-Host "     irm 'https://cursor.com/install?win32=true' | iex"
-Write-Host "     agent login"
 Write-Host ""
-Write-Host "=== 手动审查（IDE 或终端） ===" -ForegroundColor Cyan
+Write-Host "=== 重要：不要在 Command Line 中手写 %PATH% 等参数 ===" -ForegroundColor Yellow
+Write-Host "TortoiseSVN 会自动按 PATH DEPTH MESSAGEFILE CWD 顺序追加参数。"
+Write-Host "若手写占位符，可能作为普通字符串传给脚本，导致 PATH 未替换。"
 Write-Host ""
+Write-Host "4. 必须用资源管理器 TortoiseSVN -> Commit 提交（VS/命令行 svn 不触发 Hook）"
+Write-Host "5. Cursor CLI: agent login && agent status"
+Write-Host ""
+Write-Host "=== 手动审查 ===" -ForegroundColor Cyan
 Write-Host "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$(Join-Path $targetDir 'Invoke-SvnAiReview.ps1')`" -WorkspacePath `"$wcPath`""
-Write-Host ""
-Write-Host "=== 项目侧建议 ===" -ForegroundColor Cyan
-Write-Host "- 将 .review/ 加入 svn:ignore（运行时 diff 与报告不入库）"
-Write-Host "- 可选：在工作副本根创建 review-config.local.json 覆盖 gateMode 等配置"
 Write-Host ""

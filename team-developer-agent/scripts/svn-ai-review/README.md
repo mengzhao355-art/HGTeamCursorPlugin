@@ -21,6 +21,20 @@ cd team-developer-agent\scripts\svn-ai-review
 
 按输出说明在 TortoiseSVN → Settings → Hook Scripts 注册 **Pre-commit** Hook。
 
+**Command Line 示例**（不要手写 `%PATH%` 等参数，TortoiseSVN 会自动追加）：
+
+```
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Users\你\AppData\Local\ExoscopeTeam\svn-ai-review\review-pre-commit.ps1"
+```
+
+| 字段 | 值 |
+|------|-----|
+| Hook Type | **Pre-commit** |
+| Wait for the script to finish | **勾选** |
+| 提交方式 | 资源管理器 **TortoiseSVN → Commit** |
+
+**常见错误**：Command Line 末尾手写 `%PATH% %DEPTH% %MESSAGEFILE% %CWD%`，会报「TortoiseSVN 未替换 PATH」。删除这些占位符即可。
+
 ### 3. 手动审查（可选）
 
 ```powershell
