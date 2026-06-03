@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     SVN 变更 AI 代码审查核心逻辑（Hook 与手动模式共用）。
@@ -121,7 +121,11 @@ function Test-ShouldSkipFile {
         [object]$Config
     )
 
-    if (-not (Test-Path $FilePath -PathType Leaf)) {
+    if (-not (Test-Path -LiteralPath $FilePath)) {
+        return $true
+    }
+
+    if (-not (Test-Path -LiteralPath $FilePath -PathType Leaf)) {
         return $true
     }
 
@@ -132,6 +136,28 @@ function Test-ShouldSkipFile {
         }
     }
     return $false
+}
+
+function Test-IsPropertyOnlyChange {
+    param(
+        [string[]]$Paths,
+        [string]$Workspace
+    )
+
+    if ($Paths.Count -eq 0) {
+        return $false
+    }
+
+    $hasReviewableLeaf = $false
+    foreach ($path in $Paths) {
+        $fullPath = if ([System.IO.Path]::IsPathRooted($path)) { $path } else { Join-Path $Workspace $path }
+        if ((Test-Path -LiteralPath $fullPath -PathType Leaf)) {
+            $hasReviewableLeaf = $true
+            break
+        }
+    }
+
+    return -not $hasReviewableLeaf
 }
 
 function Get-CommitMessage {
@@ -247,6 +273,27 @@ $workspace = (Resolve-Path $WorkspacePath).Path
 $defaultConfigPath = Join-Path $scriptDir 'review-config.json'
 $config = Get-ReviewConfig -Workspace $workspace -DefaultConfigPath $defaultConfigPath -OverrideConfigPath $ConfigPath
 
+# 先判断是否需要审查，属性变更/无可审查文件时直接跳过（无需 agent）
+$files = @($FileList | Where-Object { $_ -and $_.Trim() })
+if ($files.Count -eq 0) {
+    $files = @(Get-SvnChangedFiles -Root $workspace)
+}
+
+$files = @(
+    $files |
+        ForEach-Object {
+            if ([System.IO.Path]::IsPathRooted($_)) { $_ } else { Join-Path $workspace $_ }
+        } |
+        Where-Object { -not (Test-ShouldSkipFile -FilePath $_ -Config $config) } |
+        Select-Object -Unique
+)
+
+if (@($files).Count -eq 0 -or (Test-IsPropertyOnlyChange -Paths @($FileList) -Workspace $workspace)) {
+    if ($HookMode) { exit 0 }
+    Write-Output @{ ExitCode = 0; Message = '无可审查的文本文件（可能为属性变更如 svn:ignore），已跳过。' }
+    return
+}
+
 if (-not (Test-AgentCliAvailable)) {
     $msg = @"
 Cursor CLI (agent) 未安装或未登录。
@@ -273,25 +320,6 @@ catch {
     throw
 }
 
-# 收集待审查文件
-$files = @($FileList | Where-Object { $_ -and $_.Trim() })
-if ($files.Count -eq 0) {
-    $files = @(Get-SvnChangedFiles -Root $workspace)
-}
-
-$files = $files |
-    ForEach-Object {
-        if ([System.IO.Path]::IsPathRooted($_)) { $_ } else { Join-Path $workspace $_ }
-    } |
-    Where-Object { -not (Test-ShouldSkipFile -FilePath $_ -Config $config) } |
-    Select-Object -Unique
-
-if ($files.Count -eq 0) {
-    if ($HookMode) { exit 0 }
-    Write-Output @{ ExitCode = 0; Message = '无可审查的文本文件，已跳过。' }
-    return
-}
-
 # 准备目录
 $reviewRoot = Join-Path $workspace '.review'
 $tempDir = Join-Path $reviewRoot 'temp'
@@ -311,12 +339,23 @@ try {
         else { $_ }
     }
 
-    $diffOutput = & svn diff @relativeFiles 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw "svn diff 失败：$diffOutput"
+    if ($relativeFiles.Count -eq 0) {
+        $diffText = ''
+    }
+    else {
+        $diffOutput = & svn diff @relativeFiles 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            $diffOutputText = ($diffOutput | Out-String).Trim()
+            if ($diffOutputText -match '参数错误|parameter|E155010|E200009') {
+                if ($HookMode) { exit 0 }
+                Write-Output @{ ExitCode = 0; Message = 'svn diff 无文本变更（可能为属性变更），已跳过。' }
+                return
+            }
+            throw "svn diff 失败：$diffOutputText"
+        }
+        $diffText = ($diffOutput | Out-String)
     }
 
-    $diffText = ($diffOutput | Out-String)
     Set-Content -Path $diffPath -Value $diffText -Encoding UTF8
 }
 finally {

@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     将 SVN AI 审查脚本部署到稳定路径，并输出 TortoiseSVN Hook 配置说明。
