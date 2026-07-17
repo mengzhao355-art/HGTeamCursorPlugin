@@ -42,12 +42,20 @@ agent status
 
 ### 第 3 步：运行安装脚本 + 配置 TortoiseSVN
 
-**3a. 运行稳定启动器安装脚本**（只需一次）
+**3a. 运行一键部署脚本**（只需一次；插件需已安装）
 
-在 PowerShell 中执行（复制整段即可）：
+推荐（在本仓库 / 已安装插件目录执行，自动定位脚本源并部署到本机 `%LOCALAPPDATA%`）：
 
 ```powershell
-$pluginScript = Get-ChildItem "$env:USERPROFILE\.cursor\plugins\cache\team-plugins" -Recurse -Filter "install-tortoisesvn-hook.ps1" -ErrorAction SilentlyContinue | Select-Object -First 1
+cd "<HGTeamCursorPlugin>\team-developer-agent\scripts\svn-ai-review"
+.\Deploy-SvnAiReview.ps1
+# 或指定 WC：.\Deploy-SvnAiReview.ps1 -WorkingCopyPath "E:\project"
+```
+
+若仅从 Cursor 插件缓存运行：
+
+```powershell
+$pluginScript = Get-ChildItem "$env:USERPROFILE\.cursor\plugins\cache\team-plugins" -Recurse -Filter "Deploy-SvnAiReview.ps1" -ErrorAction SilentlyContinue | Select-Object -First 1
 if (-not $pluginScript) { Write-Error "未找到插件，请先在 Cursor 安装 team-developer-agent"; return }
 & $pluginScript.FullName
 ```
