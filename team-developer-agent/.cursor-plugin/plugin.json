@@ -1,9 +1,9 @@
 {
   "name": "team-developer-agent",
   "version": "1.1.0",
-  "description": "开发 Agent：按 PRD + UI 规格实现代码；SVN 提交前 AI 审查；TAPD Bug 文档生成。",
+  "description": "开发 Agent：按 PRD + UI 规格实现代码；单元测试生成；SVN 提交前 AI 审查；TAPD Bug 文档生成。",
   "author": {
     "name": "Exoscope Team"
   },
-  "keywords": ["dev", "implement", "coding", "开发", "编码", "review", "svn", "code-review", "审查"]
+  "keywords": ["dev", "implement", "coding", "开发", "编码", "unit-test", "单元测试", "review", "svn", "code-review", "审查"]
 }

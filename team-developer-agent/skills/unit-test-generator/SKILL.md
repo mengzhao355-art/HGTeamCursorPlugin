@@ -3,7 +3,7 @@ name: unit-test-generator
 description: >-
   为已有测试项目生成并通过单元测试：分析可测性、必要时提出最小抽取、设计用例、
   生成测试、运行测试并修正至通过。Use when the user asks to 生成单元测试、补单元测试、
-  unit test、写测试、@unit-test-generator，或开发完成后要求补测。
+  unit test、写测试、@unit-test-generator、/team:unit-test，或开发完成后要求补测。
 ---
 
 # Unit Test Generator

@@ -43,6 +43,7 @@
 | `/team:pm` | 产品经理 / PRD → `requirements/<slug>-prd.md` |
 | `/team:ui` | UI 规格 → `design/<slug>-ui-spec.md` |
 | `/team:dev` | 开发实现（读 PRD + UI 规格） |
+| `/team:unit-test` | 为指定源码生成并通过单元测试（见 `unit-test-generator`） |
 | `/team:bugfix` | 缺陷修复（`BUGFIX/` + TAPD；多 ID 连续修；末尾**本轮总清单** + **交付说明**（仅版本与修改摘要），见 `tapd-bugfix-agent`） |
 | `/team:qa` | 测试用例与执行 → `test/<slug>-test-cases.md` |
 | `/team:ux` | 交互验收报告 → `review/<slug>-ux-review.md` |
